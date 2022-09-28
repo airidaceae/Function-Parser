@@ -1,13 +1,5 @@
-use text_io;
+use std::io::{stdout, Write};
 
-fn power(num1: f64, thing2: f64) -> f64{
-    let num2 = thing2 as i32;
-    let mut output = 1.0;
-    for _ in 0..num2{
-        output = output * num1; //this is a comment
-    }
-    return output;
-}
 fn evaluate(function: &str, x: f64 ) -> f64 {
     let mut substr: Vec<String> = Vec::new();
     let mut past = false;
@@ -37,7 +29,7 @@ fn evaluate(function: &str, x: f64 ) -> f64 {
             "-" => return evaluate(&substr[0], x) - evaluate(&substr[2], x),
             "/" => return evaluate(&substr[0], x) / evaluate(&substr[2], x),
             "*" => return evaluate(&substr[0], x) * evaluate(&substr[2], x),
-            "^" => return power(evaluate(&substr[0], x), evaluate(&substr[2], x)),
+            "^" => return evaluate(&substr[0], x).powf(evaluate(&substr[2],x)),
             _ => return 0.0
         }
 
@@ -56,15 +48,20 @@ fn main() {
 
     println!("Hello, this program will solve for approximate tangent line at a point!");
     print!("Please input the function you are working with: ");
-    function = text_io::read!();
+    let _ = stdout().flush();
+    std::io::stdin().read_line(&mut function).unwrap();
     print!("Please input the x value you are searching for: ");
-    input_x = text_io::read!();
+    let _ = stdout().flush();
+    std::io::stdin().read_line(&mut input_x).unwrap();
     print!("How many decimal points of precision do you need? ");
-    precision = text_io::read!();
+    let _ = stdout().flush();
+    std::io::stdin().read_line(&mut precision).unwrap();
 
-    let input_x:f64 = input_x.parse().unwrap();
+    let precision:i32 = precision.trim().parse().unwrap();
+    let input_x:f64 = input_x.trim().parse().unwrap();
+    function = function.trim().to_string();
+
     let mut start = String::from("0.");
-    let precision:i32 = precision.parse().unwrap();
     for _ in 0..precision + 1 {
         start.push_str("0");
     }
@@ -72,8 +69,8 @@ fn main() {
     let editor:f64 = start.parse().unwrap();
     let lower:f64 = input_x - editor;
     let upper:f64 = input_x + editor;
+
     println!("eval of f(x) = {}", evaluate(&function, input_x));
-    //evaluate(function, upper);
     let estimated_derivative = (evaluate(&function, upper) - evaluate(&function, lower)) / (upper-lower);
     println!("eval of f'(x) = {}", estimated_derivative);
 }

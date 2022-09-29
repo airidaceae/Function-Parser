@@ -1,4 +1,36 @@
+/* Iris Pupo
+ * sudo-iris
+ * To-do:
+ * Parenthesis support
+ * clean up output formatting
+ * improve multi-digit parsing support
+ * coefficients????
+ *
+ */
 use std::io::{stdout, Write};
+
+trait Search {
+    fn search(self, token: char) -> Option<usize>;
+}
+impl Search for &str{
+    fn search(self, token: char) -> Option<usize> {
+        let mut iterator: usize = 0;
+        let mut paren_count: i32 = 0;
+        for part in self.chars(){
+            if part == '('{
+                paren_count += 1;
+            }
+            else if part == ')'{
+                paren_count -= 1;
+            }
+            else if part == token && paren_count == 0{
+                return Some(iterator);
+            }
+            iterator+=1;
+        }
+        return None;
+    }
+}
 
 fn evaluate(function: &str, x: f64 ) -> f64 {
     let mut substr: Vec<String> = Vec::new();
@@ -6,15 +38,16 @@ fn evaluate(function: &str, x: f64 ) -> f64 {
     let mut token_list: Vec<Option<usize>> = Vec::new();
     //println!("{}", function);
 
-    token_list.push(function.find("+"));
-    token_list.push(function.find("-"));
-    token_list.push(function.find("*"));
-    token_list.push(function.find("/"));
-    token_list.push(function.find("^"));
-    let paren = function.find("(");
+    token_list.push(function.search('+'));
+    token_list.push(function.search('-'));
+    token_list.push(function.search('*'));
+    token_list.push(function.search('/'));
+    token_list.push(function.search('^'));
+    //let paren = function.find("(");
 
     for token in token_list{
-        if token != None{
+        if token.is_some(){
+            println!("token = {}", token.unwrap());
             substr.push(function.chars().skip(0).take(token.unwrap()).collect());
             substr.push(function.chars().skip(token.unwrap()).take(1).collect());
             substr.push(function.chars().skip(token.unwrap() + 1).take(function.chars().count() - token.unwrap()).collect());
@@ -41,6 +74,7 @@ fn evaluate(function: &str, x: f64 ) -> f64 {
         return function.parse().unwrap();
     }
 }
+
 fn main() {
     let mut function = String::from("");
     let mut input_x = String::from("");
@@ -70,7 +104,7 @@ fn main() {
     let lower:f64 = input_x - editor;
     let upper:f64 = input_x + editor;
 
-    println!("eval of f(x) = {}", evaluate(&function, input_x));
+    println!("eval of f({}) = {}", input_x, evaluate(&function, input_x));
     let estimated_derivative = (evaluate(&function, upper) - evaluate(&function, lower)) / (upper-lower);
-    println!("eval of f'(x) = {}", estimated_derivative);
+    println!("eval of f'({}) = {}", input_x, estimated_derivative);
 }

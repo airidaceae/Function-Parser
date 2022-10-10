@@ -9,24 +9,25 @@
  */
 use std::io::{stdout, Write};
 
-trait Search {
-    fn search(self, token: char) -> Option<usize>;
+trait FindClose {
+    fn find_close(self, pos: usize) -> Option<usize>;
 }
-impl Search for &str{
-    fn search(self, token: char) -> Option<usize> {
+impl FindClose for &str{
+    fn find_close(self, pos: usize) -> Option<usize> {
         let mut iterator: usize = 0;
         let mut paren_count: i32 = 0;
-        for part in self.chars(){
-            if part == '('{
-                paren_count += 1;
+        for part in self.chars() {
+            if iterator >= pos {
+                if part == '(' {
+                    paren_count += 1;
+                } else if part == ')' {
+                    paren_count -= 1;
+                    if paren_count == 0 {
+                        return Some(iterator);
+                    }
+                }
             }
-            else if part == ')'{
-                paren_count -= 1;
-            }
-            else if part == token && paren_count == 0{
-                return Some(iterator);
-            }
-            iterator+=1;
+            iterator += 1;
         }
         return None;
     }
@@ -34,23 +35,35 @@ impl Search for &str{
 
 fn evaluate(function: &str, x: f64 ) -> f64 {
     let mut substr: Vec<String> = Vec::new();
-    let mut past = false;
+    let mut past: bool = false;
     let mut token_list: Vec<Option<usize>> = Vec::new();
     //println!("{}", function);
 
-    token_list.push(function.search('+'));
-    token_list.push(function.search('-'));
-    token_list.push(function.search('*'));
-    token_list.push(function.search('/'));
-    token_list.push(function.search('^'));
-    //let paren = function.find("(");
+    token_list.push(function.find('+'));
+    token_list.push(function.find('-'));
+    token_list.push(function.find('*'));
+    token_list.push(function.find('/'));
+    token_list.push(function.find('^'));
+    /*let paren: Option<usize> = function.find("(");
+    if paren.is_some() {
+        let close_pos:Option<usize> = function.find_close(paren.unwrap());
+        if close_pos.is_some(){
 
+            let mut new_string = String::from("");
+            new_string.push_str(&function.chars().skip(0).take(paren.unwrap()).collect());
+            new_string.push_str(evaluate((function.chars().skip(paren.unwrap()).take(close_pos.unwrap()).collect()).to_str(),x).to_string().as_str());
+            new_string.push_str(function.chars().skip(close_pos.unwrap()).take(function.chars().count() - close_pos).collect());
+            return evaluate(&new_string, x);
+        }
+    }*/
     for token in token_list{
-        if token.is_some(){
-            println!("token = {}", token.unwrap());
-            substr.push(function.chars().skip(0).take(token.unwrap()).collect());
-            substr.push(function.chars().skip(token.unwrap()).take(1).collect());
-            substr.push(function.chars().skip(token.unwrap() + 1).take(function.chars().count() - token.unwrap()).collect());
+
+        if token.is_some() {
+            let token = token.unwrap();
+            //println!("token = {}", token.unwrap());
+            substr.push(function.chars().skip(0).take(token).collect());
+            substr.push(function.chars().skip(token).take(1).collect());
+            substr.push(function.chars().skip(token + 1).take(function.chars().count() - token).collect());
             past = true;
             break;
         }

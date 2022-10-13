@@ -35,43 +35,34 @@ impl FindClose for &str{
 }
 
 fn token_finder(expression: &str, token_set: Vec<char>) -> Option<usize> {
-    let mut position: usize = 0;
+    iterator: usize = 0;
     for character in expression.chars() {
-        for token in &token_set {
-             if token == &character {
-                return Some(position);
+        for token in token_set{
+             if token == character(){
+                return Some<iterator>;
             }
         }
-        position += 1;
-    } 
+        iterator += 1;
+    ) 
     return None;
 }
 
 fn parse(expression: &str) -> Vec<String>{
-    let mut token_layer: [Vec<char>; 4] = Default::default();
+    let mut token_layer: [Vec<char>; 3] = Default::default();
     token_layer[0].push('(');
     token_layer[1].push('+');
-    token_layer[1].push('-');
-    token_layer[2].push('*');
-    token_layer[3].push('^');
-    let mut split_pos: Option<usize>;
-
-    let mut substr: Vec<String> = Vec::new();
-    for layer in &token_layer{
-         split_pos = token_finder(expression, layer.to_owned());
-        if split_pos.is_some(){
-            let split_pos: usize = split_pos.unwrap();
-            if layer.to_owned() == token_layer[0]{
-           
-            }
-            else{
-                substr.push(expression.chars().take(split_pos).collect()); 
-                substr.push(expression.chars().skip(split_pos).take(1).collect()); 
-                substr.push(expression.chars().skip(split_pos + 1).take(expression.chars().count() - split_pos).collect()); 
-            }
+    token_layer[1].push("-");
+    token_layer[2].push("*");
+    token_layer[3].push("^");
+    
+    for layer in token_layer{
+        if layer == token_layer[0]{
+            todo!();
         }
+        token_finder(expression, layer);
     }
-    return substr;
+
+    todo!();
 }
 
 
@@ -95,8 +86,8 @@ fn can_be_parsed(expression: &str) -> bool{
 
 fn evaluate(expression: &str, x: f64 ) -> f64 {
     let mut substr: Vec<String> = Vec::new();
-    let past: bool;
-    println!("{}", expression); 
+    let mut past: bool;
+    //println!("{}", function); 
     if can_be_parsed(expression) {
         substr = parse(expression);
         past = true;
@@ -104,6 +95,7 @@ fn evaluate(expression: &str, x: f64 ) -> f64 {
     else{
         past = false;
     }
+    todo!();
     if past {
         match substr[1].as_str(){
             "+" => return evaluate(&substr[0], x) + evaluate(&substr[2], x),

@@ -1,2 +1,12 @@
 # Function Parser
-A function parser that currently solves for the value of x at a point as well as the estimated derivate of x at a point.
+A function parser. theoretically can evaluate any basic function. Main function is essentially a test case that evaluates f(x) and f'(x)
+
+### To-do
+-[] parenthesis support
+-[] clean up output
+-[] imrpove multi-digit parsing support
+-[] actually parse "correctly"
+-[] sqrt cosine and other "fun" functions
+-[] coefficients
+-[] negatives
+

@@ -1,17 +1,13 @@
 /* Iris Pupo
  * sudo-iris
- * To-do:
- * Parenthesis support
- * clean up output formatting
- * improve multi-digit parsing support
- * coefficients????
- *
- */
+ */ 
 use std::io::{stdout, Write};
+
 
 trait FindClose {
     fn find_close(self, pos: usize) -> Option<usize>;
 }
+
 impl FindClose for &str{
     fn find_close(self, pos: usize) -> Option<usize> {
         let mut iterator: usize = 0;
@@ -24,12 +20,14 @@ impl FindClose for &str{
                 else if part == ')' {
                     paren_count -= 1;
                     if paren_count == 0 {
+                        //println!("returning some");
                         return Some(iterator);
                     }
                 }
             }
             iterator += 1;
         }
+        //println!("returning none\n iterator is {}", iterator);
         return None;
     }
 }
@@ -48,35 +46,35 @@ fn token_finder(expression: &str, token_set: Vec<char>) -> Option<usize> {
 }
 
 fn parse(expression: &str) -> Vec<String>{
-    let mut token_layer: [Vec<char>; 4] = Default::default();
-    token_layer[0].push('(');
-    token_layer[1].push('+');
-    token_layer[1].push('-');
-    token_layer[2].push('*');
-    token_layer[3].push('^');
-    let mut split_pos: Option<usize>;
+    let mut token_layer: [Vec<char>; 3] = Default::default();
+    
+    //layers are neccesary to make sure one token from a pemdas layer does not have higher priority 
+    token_layer[0].push('+');
+    token_layer[0].push('-');
+    token_layer[1].push('*');
+    token_layer[1].push('/');
+    token_layer[2].push('^');
 
+    let mut split_pos: Option<usize>;
     let mut substr: Vec<String> = Vec::new();
-    for layer in &token_layer{
+    for layer in &token_layer {
          split_pos = token_finder(expression, layer.to_owned());
         if split_pos.is_some(){
-            let split_pos: usize = split_pos.unwrap();
-            if layer.to_owned() == token_layer[0]{
-           
-            }
-            else{
-                substr.push(expression.chars().take(split_pos).collect()); 
-                substr.push(expression.chars().skip(split_pos).take(1).collect()); 
-                substr.push(expression.chars().skip(split_pos + 1).take(expression.chars().count() - split_pos).collect()); 
-            }
+            let split_pos = split_pos.unwrap();
+            
+            //return the parts of the substring that will be evaluated.
+            substr.push(expression.chars().take(split_pos).collect()); 
+            substr.push(expression.chars().skip(split_pos).take(1).collect()); 
+            substr.push(expression.chars().skip(split_pos + 1).take(expression.chars().count() - split_pos).collect()); 
         }
     }
     return substr;
 }
 
 
-//this function checks if the expression is able to be parsed
-fn can_be_parsed(expression: &str) -> bool{ 
+//this function checks if the expression is able to be parsed, probably useless
+fn can_be_parsed(expression: &str) -> bool{
+    //println!("current expression is {}",expression);
     let mut token_list: Vec<Option<usize>> = Vec::new();
     token_list.push(expression.find('+'));
     token_list.push(expression.find('-'));
@@ -96,14 +94,42 @@ fn can_be_parsed(expression: &str) -> bool{
 fn evaluate(expression: &str, x: f64 ) -> f64 {
     let mut substr: Vec<String> = Vec::new();
     let past: bool;
-    println!("{}", expression); 
-    if can_be_parsed(expression) {
+
+    //println!("{}", expression); 
+    let paren = expression.find("(");
+    let mut evaluated_expression = String::from("");
+    if paren.is_some(){
+        let paren = paren.unwrap();
+        let close_pos = expression.find_close(paren);
+        if close_pos.is_some(){ //evaluates parenthesis by seperating it into the parts around the
+                                //parenthesis and concatinating it with the result of evaluating
+                                //the inner value
+            let close_pos = close_pos.unwrap();
+            evaluated_expression.push_str(&expression.chars().take(paren).collect::<String>().to_owned());
+            //println!("push 0 is {}", evaluated_expression);    
+            evaluated_expression.push_str(&evaluate(&expression.chars().skip(paren + 1).take(close_pos - paren -1).collect::<String>().to_owned(), x).to_string().to_owned());
+            //println!("push 1 is {}", evaluated_expression);    
+            evaluated_expression.push_str(&expression.chars().skip(close_pos + 1).take(expression.chars().count() - (close_pos)).collect::<String>().to_owned());
+            //println!("push 2 is {}", evaluated_expression);  
+            return evaluate(&evaluated_expression, x);
+        }
+        //println!("LINE 114 CODE ERROR");
+        past = false;
+    }
+    else if can_be_parsed(expression) {
         substr = parse(expression);
+        //println!("substring 0 = {}", substr[0]);
+        //println!("substring 1 = {}", substr[1]);
+        //println!("substring 2 = {}", substr[2]);
+
+        //println!("past");
         past = true;
     }
     else{
+        //println!("did not pass");
         past = false;
     }
+
     if past {
         match substr[1].as_str(){
             "+" => return evaluate(&substr[0], x) + evaluate(&substr[2], x),
@@ -116,11 +142,24 @@ fn evaluate(expression: &str, x: f64 ) -> f64 {
 
     }
     else if expression == "x" {
+        //println!("returning x is {}", x);
         return x;
     }
     else {
+        //println!("expression is {} before parse and return", expression);
         return expression.parse().unwrap();
     }
+}
+
+//a functiont to format the output bc i could not find a better way to do it
+fn format(input: f64, precision: i32) -> f64{
+    let mut num = input;
+    let powered: f64 = 10.0;
+    let powered = powered.powi(precision);
+    num *= powered;
+    num = num.round();
+    num /= powered;
+    return num;
 }
 
 fn main() {
@@ -128,11 +167,11 @@ fn main() {
     let mut input_x = String::from("");
     let mut precision = String::from("");
 
-    println!("Hello, this program will solve for approximate tangent line at a point!");
-    print!("Please input the function you are working with: ");
+    println!("This program solves for apporoximate tangent line at a point :3");
+    print!("Input the function you are working with: ");
     let _ = stdout().flush();
     std::io::stdin().read_line(&mut function).unwrap();
-    print!("Please input the x value you are searching for: ");
+    print!("Input the x value you are searching for: ");
     let _ = stdout().flush();
     std::io::stdin().read_line(&mut input_x).unwrap();
     print!("How many decimal points of precision do you need? ");
@@ -152,7 +191,7 @@ fn main() {
     let lower:f64 = input_x - editor;
     let upper:f64 = input_x + editor;
 
-    println!("eval of f({}) = {}", input_x, evaluate(&function, input_x));
+    println!("f({}) = {}", input_x, format(evaluate(&function, input_x), precision));
     let estimated_derivative = (evaluate(&function, upper) - evaluate(&function, lower)) / (upper-lower);
-    println!("eval of f'({}) = {}", input_x, estimated_derivative);
+    println!("f'({}) = {}", input_x, format(estimated_derivative, precision));
 }

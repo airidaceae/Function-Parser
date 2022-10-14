@@ -71,7 +71,6 @@ fn parse(expression: &str) -> Vec<String>{
     return substr;
 }
 
-
 //this function checks if the expression is able to be parsed, probably useless
 fn can_be_parsed(expression: &str) -> bool{
     //println!("current expression is {}",expression);

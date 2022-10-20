@@ -46,18 +46,17 @@ fn token_finder(expression: &str, token_set: Vec<char>) -> Option<usize> {
 }
 
 fn parse(expression: &str) -> Vec<String>{
-    let mut token_layer: [Vec<char>; 3] = Default::default();
-    
-    //layers are neccesary to make sure one token from a pemdas layer does not have higher priority 
-    token_layer[0].push('+');
-    token_layer[0].push('-');
-    token_layer[1].push('*');
-    token_layer[1].push('/');
-    token_layer[2].push('^');
 
+    //layers are neccesary to make sure one token from a pemdas layer does not have higher priority 
+    let mut _token_layer = [
+        vec!['+', '-'], 
+        vec!['*', '/'],
+        vec!['*'],
+    ];
+    
     let mut split_pos: Option<usize>;
     let mut substr: Vec<String> = Vec::new();
-    for layer in &token_layer {
+    for layer in _token_layer {
          split_pos = token_finder(expression, layer.to_owned());
         if split_pos.is_some(){
             let split_pos = split_pos.unwrap();
@@ -108,7 +107,7 @@ fn evaluate(expression: &str, x: f64 ) -> f64 {
             //println!("push 0 is {}", evaluated_expression);    
             evaluated_expression.push_str(&evaluate(&expression.chars().skip(paren + 1).take(close_pos - paren -1).collect::<String>().to_owned(), x).to_string().to_owned());
             //println!("push 1 is {}", evaluated_expression);    
-            evaluated_expression.push_str(&expression.chars().skip(close_pos + 1).take(expression.chars().count() - (close_pos)).collect::<String>().to_owned());
+            evaluated_expression.push_str(&expression.chars().skip(close_pos + 1).take(expression.chars().count() - close_pos).collect::<String>().to_owned());
             //println!("push 2 is {}", evaluated_expression);  
             return evaluate(&evaluated_expression, x);
         }
@@ -130,12 +129,14 @@ fn evaluate(expression: &str, x: f64 ) -> f64 {
     }
 
     if past {
+        let lhs: f64 = evaluate(&substr[0], x);
+        let rhs: f64 = evaluate(&substr[2], x);
         match substr[1].as_str(){
-            "+" => return evaluate(&substr[0], x) + evaluate(&substr[2], x),
-            "-" => return evaluate(&substr[0], x) - evaluate(&substr[2], x),
-            "/" => return evaluate(&substr[0], x) / evaluate(&substr[2], x),
-            "*" => return evaluate(&substr[0], x) * evaluate(&substr[2], x),
-            "^" => return evaluate(&substr[0], x).powf(evaluate(&substr[2],x)),
+            "+" => return lhs + rhs,
+            "-" => return lhs - rhs, 
+            "/" => return lhs / rhs,
+            "*" => return lhs * rhs, 
+            "^" => return lhs.powf(rhs), 
             _ => return 0.0
         }
 

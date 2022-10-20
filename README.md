@@ -3,9 +3,9 @@ A function parser. theoretically can evaluate any basic function. Main function 
 
 ### To-do
 - [X] parenthesis support
-- [ ] clean up output
-- [ ] substrings
-- [X] imrpove multi-digit parsing support
+- [X] clean up output
+- [X] substrings
+- [X] improve multi-digit parsing support
 - [ ] actually parse "correctly"
 - [ ] sqrt cosine and other "fun" functions
 - [ ] coefficients

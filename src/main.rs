@@ -45,26 +45,29 @@ fn token_finder(expression: &str, token_set: Vec<char>) -> Option<usize> {
     return None;
 }
 
-fn parse(expression: &str) -> Vec<String>{
+fn parse(expression: &str) -> Vec<&str>{
 
     //layers are neccesary to make sure one token from a pemdas layer does not have higher priority 
     let mut _token_layer = [
         vec!['+', '-'], 
         vec!['*', '/'],
-        vec!['*'],
+        vec!['^'],
     ];
     
     let mut split_pos: Option<usize>;
-    let mut substr: Vec<String> = Vec::new();
+    let mut substr: Vec<&str> = Vec::new();
     for layer in _token_layer {
          split_pos = token_finder(expression, layer.to_owned());
         if split_pos.is_some(){
             let split_pos = split_pos.unwrap();
-            
+           
             //return the parts of the substring that will be evaluated.
-            substr.push(expression.chars().take(split_pos).collect()); 
-            substr.push(expression.chars().skip(split_pos).take(1).collect()); 
-            substr.push(expression.chars().skip(split_pos + 1).take(expression.chars().count() - split_pos).collect()); 
+            substr.push(&expression[0..split_pos]);
+            //println!("push 1 is {}", substr[0]);
+            substr.push(&expression[split_pos..(split_pos+1)]);
+            //println!("push 2 is {}", substr[1]);
+            substr.push(&expression[(split_pos + 1)..(expression.chars().count())]);
+            //println!("push 3 is {}", substr[2]);
         }
     }
     return substr;
@@ -73,16 +76,9 @@ fn parse(expression: &str) -> Vec<String>{
 //this function checks if the expression is able to be parsed, probably useless
 fn can_be_parsed(expression: &str) -> bool{
     //println!("current expression is {}",expression);
-    let mut token_list: Vec<Option<usize>> = Vec::new();
-    token_list.push(expression.find('+'));
-    token_list.push(expression.find('-'));
-    token_list.push(expression.find('*'));
-    token_list.push(expression.find('/'));
-    token_list.push(expression.find('^'));
-    token_list.push(expression.find('('));
-    token_list.push(expression.find(')'));
-    for token in token_list{
-        if token.is_some(){
+    let mut _token_list: Vec<char> = vec!['+', '-', '*', '/', '^', '(', ')'];
+    for token in _token_list{
+        if expression.find(token).is_some(){
             return true;
         }
     }
@@ -90,7 +86,7 @@ fn can_be_parsed(expression: &str) -> bool{
 }
 
 fn evaluate(expression: &str, x: f64 ) -> f64 {
-    let mut substr: Vec<String> = Vec::new();
+    let mut substr: Vec<&str> = Vec::new();
     let past: bool;
 
     //println!("{}", expression); 
@@ -103,18 +99,20 @@ fn evaluate(expression: &str, x: f64 ) -> f64 {
                                 //parenthesis and concatinating it with the result of evaluating
                                 //the inner value
             let close_pos = close_pos.unwrap();
-            evaluated_expression.push_str(&expression.chars().take(paren).collect::<String>().to_owned());
-            //println!("push 0 is {}", evaluated_expression);    
-            evaluated_expression.push_str(&evaluate(&expression.chars().skip(paren + 1).take(close_pos - paren -1).collect::<String>().to_owned(), x).to_string().to_owned());
-            //println!("push 1 is {}", evaluated_expression);    
-            evaluated_expression.push_str(&expression.chars().skip(close_pos + 1).take(expression.chars().count() - close_pos).collect::<String>().to_owned());
-            //println!("push 2 is {}", evaluated_expression);  
+
+            evaluated_expression.push_str(&expression[0..paren]);
+            //println!("ppush 1 is {}", evaluated_expression);
+            evaluated_expression.push_str(&evaluate(&expression[(paren + 1)..(close_pos - paren )], x).to_string());
+            //println!("ppush 2 is {}", evaluated_expression);
+            evaluated_expression.push_str(&expression[(close_pos + 1)..(expression.chars().count())]);
+            //println!("ppush 3 is {}", evaluated_expression);
             return evaluate(&evaluated_expression, x);
         }
         //println!("LINE 114 CODE ERROR");
         past = false;
     }
     else if can_be_parsed(expression) {
+        //println!("expression being parsed is {}",expression);
         substr = parse(expression);
         //println!("substring 0 = {}", substr[0]);
         //println!("substring 1 = {}", substr[1]);
@@ -131,7 +129,7 @@ fn evaluate(expression: &str, x: f64 ) -> f64 {
     if past {
         let lhs: f64 = evaluate(&substr[0], x);
         let rhs: f64 = evaluate(&substr[2], x);
-        match substr[1].as_str(){
+        match substr[1]{
             "+" => return lhs + rhs,
             "-" => return lhs - rhs, 
             "/" => return lhs / rhs,

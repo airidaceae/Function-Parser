@@ -1,6 +1,6 @@
-/* Iris Pupo
- * sudo-iris
- */ 
+// Iris Pupo
+// airidaceae
+ 
 use std::io::{stdout, Write};
 
 
@@ -28,7 +28,7 @@ impl FindClose for &str{
             iterator += 1;
         }
         //println!("returning none\n iterator is {}", iterator);
-        return None;
+        None
     }
 }
 
@@ -42,7 +42,7 @@ fn token_finder(expression: &str, token_set: Vec<char>) -> Option<usize> {
         }
         position += 1;
     } 
-    return None;
+    None
 }
 
 fn parse(expression: &str) -> Vec<&str>{
@@ -70,7 +70,7 @@ fn parse(expression: &str) -> Vec<&str>{
             //println!("push 3 is {}", substr[2]);
         }
     }
-    return substr;
+    substr
 }
 
 //this function checks if the expression is able to be parsed, probably useless
@@ -82,7 +82,7 @@ fn can_be_parsed(expression: &str) -> bool{
             return true;
         }
     }
-    return false;
+    false
 }
 
 fn evaluate(expression: &str, x: f64 ) -> f64 {
@@ -130,22 +130,22 @@ fn evaluate(expression: &str, x: f64 ) -> f64 {
         let lhs: f64 = evaluate(&substr[0], x);
         let rhs: f64 = evaluate(&substr[2], x);
         match substr[1]{
-            "+" => return lhs + rhs,
-            "-" => return lhs - rhs, 
-            "/" => return lhs / rhs,
-            "*" => return lhs * rhs, 
-            "^" => return lhs.powf(rhs), 
-            _ => return 0.0
+            "+" => lhs + rhs,
+            "-" => lhs - rhs, 
+            "/" => lhs / rhs,
+            "*" => lhs * rhs, 
+            "^" => lhs.powf(rhs), 
+            _   => 0.0
         }
 
     }
     else if expression == "x" {
         //println!("returning x is {}", x);
-        return x;
+        x
     }
     else {
         //println!("expression is {} before parse and return", expression);
-        return expression.parse().unwrap();
+        expression.parse().unwrap()
     }
 }
 
@@ -157,8 +157,23 @@ fn format(input: f64, precision: i32) -> f64{
     num *= powered;
     num = num.round();
     num /= powered;
-    return num;
+    num
 }
+
+
+// implement this you gay whore ^-^
+/*fn derive(expression: &str, x: f64, degree: i32) -> f64{
+    if degree == 0{
+        return evaluate(expression, x)
+    
+    } else {
+        return
+
+
+    }
+
+    todo!();
+}*/
 
 fn main() {
     let mut function = String::from("");
